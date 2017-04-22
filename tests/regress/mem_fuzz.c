@@ -1,7 +1,5 @@
 #define __STDC_FORMAT_MACROS
-#include <inttypes.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -84,7 +82,6 @@ void perform_fuzz_step(uc_engine *uc){
 int main(int argc, char **argv, char **envp)
 {
     uc_engine *uc;
-    uc_hook trace1, trace2;
     uc_err err;
     if(argc<2){
       printf("usage: mem_fuzz $seed\n");

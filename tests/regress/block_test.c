@@ -1,9 +1,6 @@
 #include <sys/types.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <unicorn/unicorn.h>
 
@@ -63,7 +60,7 @@ int main() {
    }
    fprintf(stderr, "ok %d - uc_mem_write\n", count++);
    
-   uc_hook h1, h2;
+   uc_hook h1;
 
    err = uc_hook_add(uc, &h1, UC_HOOK_BLOCK, cb_hookblock, NULL, 1, 0);
    if (err != UC_ERR_OK) {

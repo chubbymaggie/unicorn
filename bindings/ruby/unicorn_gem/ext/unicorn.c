@@ -26,12 +26,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 VALUE UnicornModule = Qnil;
 VALUE UcClass = Qnil;
 VALUE UcError = Qnil;
+VALUE SavedContext = Qnil;
 
 
 void Init_unicorn() {
     rb_require("unicorn/unicorn_const");
     UnicornModule = rb_define_module("Unicorn");
     UcError = rb_define_class_under(UnicornModule, "UcError", rb_eStandardError);
+    SavedContext = rb_define_class_under(UnicornModule, "SavedContext", rb_cObject);
 
     UcClass = rb_define_class_under(UnicornModule, "Uc", rb_cObject);
     rb_define_method(UcClass, "initialize", m_uc_initialize, 2);
@@ -47,6 +49,9 @@ void Init_unicorn() {
     rb_define_method(UcClass, "hook_add", m_uc_hook_add, -1);
     rb_define_method(UcClass, "hook_del", m_uc_hook_del, 1);
     rb_define_method(UcClass, "query", m_uc_hook_del, 1);
+    rb_define_method(UcClass, "context_save", m_uc_context_save, 0);
+    rb_define_method(UcClass, "context_update", m_uc_context_update, 1);
+    rb_define_method(UcClass, "contest_restore", m_uc_context_restore, 1);
 }
 
 VALUE m_uc_initialize(VALUE self, VALUE arch, VALUE mode) {
@@ -73,11 +78,11 @@ VALUE m_uc_emu_start(int argc, VALUE* argv, VALUE self){
     Data_Get_Struct(rb_iv_get(self,"@uch"), uc_engine, _uc);
 
     rb_scan_args(argc, argv, "22",&begin, &until, &timeout, &count);
-    if (NIL_P(timeout))         
-        timeout = INT2NUM(0);  
+    if (NIL_P(timeout))
+        timeout = INT2NUM(0);
 
-    if (NIL_P(count))         
-        count = INT2NUM(0); 
+    if (NIL_P(count))
+        count = INT2NUM(0);
 
     err = uc_emu_start(_uc, NUM2ULL(begin), NUM2ULL(until), NUM2INT(timeout), NUM2INT(count));
     if (err != UC_ERR_OK) {
@@ -133,7 +138,7 @@ VALUE m_uc_reg_read(VALUE self, VALUE reg_id){
             if (err != UC_ERR_OK) {
               rb_raise(UcError, "%s", uc_strerror(err));
             }
-            return LL2NUM(reg_value);
+            return ULL2NUM(reg_value);
     }
 
 }
@@ -165,7 +170,7 @@ VALUE m_uc_reg_write(VALUE self, VALUE reg_id, VALUE reg_value){
             err = uc_reg_write(_uc, NUM2INT(reg_id), &tmp);
             break;
     }
-    
+
     if (err != UC_ERR_OK) {
       rb_raise(UcError, "%s", uc_strerror(err));
     }
@@ -205,8 +210,8 @@ VALUE m_uc_mem_map(int argc, VALUE* argv, VALUE self){
     uc_engine *_uc;
     Data_Get_Struct(rb_iv_get(self,"@uch"), uc_engine, _uc);
     rb_scan_args(argc, argv, "21",&address, &size, &perms);
-    if (NIL_P(perms))         
-        perms = INT2NUM(UC_PROT_ALL);  
+    if (NIL_P(perms))
+        perms = INT2NUM(UC_PROT_ALL);
 
     err = uc_mem_map(_uc, NUM2ULL(address), NUM2UINT(size), NUM2UINT(perms));
     if (err != UC_ERR_OK) {
@@ -332,14 +337,14 @@ VALUE m_uc_hook_add(int argc, VALUE* argv, VALUE self){
     uc_engine *_uc;
     Data_Get_Struct(rb_iv_get(self,"@uch"), uc_engine, _uc);
     rb_scan_args(argc, argv, "24",&hook_type, &callback, &user_data, &begin, &end, &arg1);
-    if (NIL_P(begin))         
-        begin = ULL2NUM(1);  
+    if (NIL_P(begin))
+        begin = ULL2NUM(1);
 
-    if (NIL_P(end))         
-        end = ULL2NUM(0); 
+    if (NIL_P(end))
+        end = ULL2NUM(0);
 
-    if (NIL_P(arg1))         
-        arg1 = INT2NUM(0); 
+    if (NIL_P(arg1))
+        arg1 = INT2NUM(0);
 
     VALUE passthrough;
     uc_hook trace;
@@ -374,12 +379,12 @@ VALUE m_uc_hook_add(int argc, VALUE* argv, VALUE self){
     else if(htype == UC_HOOK_CODE || htype == UC_HOOK_BLOCK){
             err = uc_hook_add(_uc, &trace,  htype, cb_hook_code,(void *)passthrough, NUM2ULL(begin), NUM2ULL(end));
     }
-    else if (htype & UC_HOOK_MEM_READ_UNMAPPED 
-            || htype & UC_HOOK_MEM_WRITE_UNMAPPED 
-            || htype & UC_HOOK_MEM_FETCH_UNMAPPED 
-            || htype & UC_HOOK_MEM_READ_PROT 
-            || htype & UC_HOOK_MEM_WRITE_PROT 
-            || htype & UC_HOOK_MEM_FETCH_PROT 
+    else if (htype & UC_HOOK_MEM_READ_UNMAPPED
+            || htype & UC_HOOK_MEM_WRITE_UNMAPPED
+            || htype & UC_HOOK_MEM_FETCH_UNMAPPED
+            || htype & UC_HOOK_MEM_READ_PROT
+            || htype & UC_HOOK_MEM_WRITE_PROT
+            || htype & UC_HOOK_MEM_FETCH_PROT
             || htype & UC_HOOK_MEM_READ_INVALID
             || htype & UC_HOOK_MEM_WRITE_INVALID
             || htype & UC_HOOK_MEM_FETCH_INVALID
@@ -387,7 +392,7 @@ VALUE m_uc_hook_add(int argc, VALUE* argv, VALUE self){
             || htype & UC_HOOK_MEM_PROT
             || htype & UC_HOOK_MEM_INVALID) {
             err = uc_hook_add(_uc, &trace,  htype, cb_hook_mem_invalid,(void *)passthrough, NUM2ULL(begin), NUM2ULL(end));
-    } 
+    }
     else{
             err = uc_hook_add(_uc, &trace,  htype, cb_hook_mem_access,(void *)passthrough, NUM2ULL(begin), NUM2ULL(end));
     }
@@ -421,4 +426,54 @@ VALUE m_uc_query(VALUE self, VALUE query_mode){
       rb_raise(UcError, "%s", uc_strerror(err));
     }
     return INT2NUM(result);
+}
+
+VALUE m_uc_context_save(VALUE self){
+    uc_err err;
+    uc_engine *_uc;
+    Data_Get_Struct(rb_iv_get(self,"@uch"), uc_engine, _uc);
+
+    uc_context *_context;
+    err = uc_context_alloc(_uc, &_context);
+    if (err != UC_ERR_OK) {
+      rb_raise(UcError, "%s", uc_strerror(err));
+    }
+
+    err = uc_context_save(_uc, _context);
+    if (err != UC_ERR_OK) {
+      rb_raise(UcError, "%s", uc_strerror(err));
+    }
+
+    VALUE sc = Data_Wrap_Struct(SavedContext, 0, uc_free, _context);
+    return sc;
+}
+
+VALUE m_uc_context_update(VALUE self, VALUE context){
+    uc_err err;
+    uc_engine *_uc;
+    Data_Get_Struct(rb_iv_get(self,"@uch"), uc_engine, _uc);
+
+    uc_context *_context;
+    Data_Get_Struct(context, uc_context, _context);
+
+    err = uc_context_save(_uc, _context);
+    if (err != UC_ERR_OK) {
+      rb_raise(UcError, "%s", uc_strerror(err));
+    }
+    return Qnil;
+}
+
+VALUE m_uc_context_restore(VALUE self, VALUE context){
+    uc_err err;
+    uc_engine *_uc;
+    Data_Get_Struct(rb_iv_get(self,"@uch"), uc_engine, _uc);
+
+    uc_context *_context;
+    Data_Get_Struct(context, uc_context, _context);
+
+    err = uc_context_restore(_uc, _context);
+    if (err != UC_ERR_OK) {
+      rb_raise(UcError, "%s", uc_strerror(err));
+    }
+    return Qnil;
 }

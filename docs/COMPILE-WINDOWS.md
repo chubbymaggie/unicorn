@@ -1,4 +1,8 @@
-We also show steps to cross-compile Unicorn for Microsoft Windows.
+To build Unicorn on Windows natively using Visual Studio, see docs under "msvc"
+directory in root directory.
+
+The rest of this manual shows how to cross-compile Unicorn for Windows using
+either MingW or Msys2.
 
 To compile for Linux, Mac OS X and Unix-based OS, see [COMPILE-NIX.md](COMPILE-NIX.md)
 
@@ -7,23 +11,14 @@ To compile for Linux, Mac OS X and Unix-based OS, see [COMPILE-NIX.md](COMPILE-N
 
 [0] Dependencies
 
-For Windows, cross-compile requires Mingw. Mingw-glib2 is needed.
-At the moment, it is confirmed that Unicorn can be compiled either on Ubuntu
-or Windows.
+For Windows, cross-compile requires Mingw. At the moment, it is confirmed that
+Unicorn can be compiled either on Ubuntu or Windows.
 
 - On Ubuntu 14.04 64-bit, do:
 
   - Download DEB packages for Mingw64 from:
 
   https://launchpad.net/~greg-hellings/+archive/ubuntu/mingw-libs/+build/2924251
-
-  - To cross-compile for Windows 32-bit, install Mingw with (ignore all the warnings):
-
-          $ sudo dpkg -i --force-depends mingw64-x86-glib2_2.31.0_all.deb
-
-  To cross-compile for Windows 64-bit, install Mingw with:
-
-        $ sudo dpkg -i --force-depends mingw64-x64-glib2_2.31.0_all.deb
 
 
 - On Windows, install MinGW via package MSYS2 at https://msys2.github.io/
@@ -42,24 +37,20 @@ or Windows.
 
           $ pacman -S python2
           $ pacman -S make
-          $ pacman -S pkg-config
-          $ pacman -S mingw-w64-i686-glib2
           $ pacman -S mingw-w64-i686-toolchain
 
   - To compile for Windows 64-bit, run:
 
           $ pacman -S python2
           $ pacman -S make
-          $ pacman -S pkg-config
-          $ pacman -S mingw-w64-x86_64-glib2
           $ pacman -S mingw-w64-x86_64-toolchain
 
-- For Cygwin, "make", "gcc-core", "pkg-config", "libpcre-devel", "zlib-devel"
-  and "libglib2.0-devel" are needed.
+- For Cygwin, "make", "gcc-core", "libpcre-devel", "zlib-devel"
+  are needed.
 
   If apt-cyg is available, you can install these with:
 
-        $ apt-cyg install make gcc-core pkg-config libpcre-devel zlib-devel libglib2.0-devel
+        $ apt-cyg install make gcc-core libpcre-devel zlib-devel
 
 
 
@@ -94,6 +85,9 @@ For each option, refer to docs/README for more details.
 [2] Compile from source on Windows - with MinGW (MSYS2)
 
 To compile with MinGW, install MSYS2 as instructed in the first section.
+
+Note: After MSYS2 is installed, you will have 3 shortcuts to open the command prompt: "MSYS2 MSYS", "MSYS2 MinGW-32 bit" and "MSYS2 MinGW 64-bit". Use the MinGW shortcut so that compilation succeeds.
+
 Then, build Unicorn with the next steps:
 
 - To compile Windows 32-bit binary with MinGW, run:
@@ -110,18 +104,12 @@ be used on Windows machine.
 To run sample_x86.exe on Windows 32-bit, you need the following files:
 
         unicorn.dll
-        %MSYS2%\mingw32\bin\libiconv-2.dll
-        %MSYS2%\mingw32\bin\libintl-8.dll
-        %MSYS2%\mingw32\bin\libglib-2.0-0.dll
         %MSYS2%\mingw32\bin\libgcc_s_dw2-1.dll
         %MSYS2%\mingw32\bin\libwinpthread-1.dll
 
 To run sample_x86.exe on Windows 64-bit, you need the following files:
 
         unicorn.dll
-        %MSYS2%\mingw64\bin\libiconv-2.dll
-        %MSYS2%\mingw64\bin\libintl-8.dll
-        %MSYS2%\mingw64\bin\libglib-2.0-0.dll
         %MSYS2%\mingw64\bin\libgcc_s_seh-1.dll
         %MSYS2%\mingw64\bin\libwinpthread-1.dll
 
@@ -169,14 +157,12 @@ be used on Windows machine.
 To run sample_x86.exe on Windows 32-bit, you need the following files:
 
         unicorn.dll
-        /usr/i686-w64-mingw32/sys-root/mingw/bin/libglib-2.0-0.dll
         /usr/lib/gcc/i686-w64-mingw32/4.8/libgcc_s_sjlj-1.dll
         /usr/i686-w64-mingw32/lib/libwinpthread-1.dll
 
 To run sample_x86.exe on Windows 64-bit, you need the following files:
 
         unicorn.dll
-        /usr/x86_64-w64-mingw32/sys-root/mingw/bin/libglib-2.0-0.dll
         /usr/lib/gcc/x86_64-w64-mingw32/4.8/libgcc_s_sjlj-1.dll
         /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll
 

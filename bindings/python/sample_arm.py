@@ -21,7 +21,7 @@ def hook_block(uc, address, size, user_data):
 
 # callback for tracing instructions
 def hook_code(uc, address, size, user_data):
-    print(">>> Tracing instruction at 0x%x, instruction size = %u" %(address, size))
+    print(">>> Tracing instruction at 0x%x, instruction size = 0x%x" %(address, size))
 
 
 # Test ARM
@@ -41,12 +41,13 @@ def test_arm():
         mu.reg_write(UC_ARM_REG_R0, 0x1234)
         mu.reg_write(UC_ARM_REG_R2, 0x6789)
         mu.reg_write(UC_ARM_REG_R3, 0x3333)
-
+        mu.reg_write(UC_ARM_REG_APSR, 0xFFFFFFFF) #All application flags turned on
+   
         # tracing all basic blocks with customized callback
         mu.hook_add(UC_HOOK_BLOCK, hook_block)
 
-        # tracing all instructions with customized callback
-        mu.hook_add(UC_HOOK_CODE, hook_code)
+        # tracing one instruction at ADDRESS with customized callback
+        mu.hook_add(UC_HOOK_CODE, hook_code, begin=ADDRESS, end=ADDRESS)
 
         # emulate machine code in infinite time
         mu.emu_start(ADDRESS, ADDRESS + len(ARM_CODE))
@@ -100,5 +101,5 @@ def test_thumb():
 
 if __name__ == '__main__':
     test_arm()
-    print("=" * 20)
+    print("=" * 26)
     test_thumb()

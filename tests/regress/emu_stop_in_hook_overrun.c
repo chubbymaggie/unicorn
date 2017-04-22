@@ -22,8 +22,6 @@ Test for uc_emu_stop() in code hook not always stopping the emu at the current i
 
 // posix specific
 #else // _MSC_VER
-#include <unistd.h>
-#include <inttypes.h>
 #include <unicorn/unicorn.h>
 #include "pthread.h"
 #endif // _MSC_VER
@@ -60,7 +58,6 @@ int main(int argc, char **argv, char **envp)
 {
     uc_engine *uc;
     uc_err err;
-    int ret;
     uc_hook hhc;
     uint32_t val;
 
